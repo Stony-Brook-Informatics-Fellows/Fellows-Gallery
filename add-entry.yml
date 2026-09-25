@@ -1,0 +1,58 @@
+name: Add gallery entry
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: gallery-update
+  cancel-in-progress: false
+
+jobs:
+  add-entry:
+    # Only run for issues created from the gallery submission form.
+    if: contains(github.event.issue.body, '### Prompt title')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Build the entry from the form
+        id: entry
+        uses: actions/github-script@v7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          script: |
+            const run = require('./.github/scripts/add-entry.js');
+            await run({ github, context, core });
+
+      - name: Save the entry to the repository
+        if: steps.entry.outputs.status == 'added'
+        env:
+          TITLE: ${{ steps.entry.outputs.title }}
+        run: |
+          git config user.name "gallery-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gallery.json entries
+          git commit -m "Add gallery entry: $TITLE"
+          git push
+
+      - name: Reply to the submitter
+        if: always() && steps.entry.outputs.status != ''
+        uses: actions/github-script@v7
+        env:
+          STATUS: ${{ steps.entry.outputs.status }}
+          MESSAGE: ${{ steps.entry.outputs.message }}
+        with:
+          script: |
+            const issue_number = context.payload.issue.number;
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({ owner, repo, issue_number, body: process.env.MESSAGE });
+            if (process.env.STATUS === 'added') {
+              await github.rest.issues.update({ owner, repo, issue_number, state: 'closed', state_reason: 'completed' });
+            }

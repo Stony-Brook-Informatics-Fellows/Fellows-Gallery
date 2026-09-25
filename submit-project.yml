@@ -1,0 +1,97 @@
+name: Submit a project to the gallery
+description: Add a prompt and screenshots of its output to the Fellows Gallery.
+title: "[Gallery] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fill in the fields below, attach at least one screenshot, and click **Submit new issue**.
+        Your entry appears in the gallery about a minute later.
+
+        **Do not include patient information.** Crop or redact names, MRNs, dates of birth, and any other identifiers before you attach a screenshot.
+
+  - type: input
+    id: title
+    attributes:
+      label: Prompt title
+      description: A short name for what you built.
+      placeholder: Daily news briefing
+    validations:
+      required: true
+
+  - type: input
+    id: author
+    attributes:
+      label: Your name
+      placeholder: Jane Doe, MD
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Briefings and summaries
+        - Clinical decision support
+        - Documentation
+        - Education
+        - QI and population health
+        - Research
+        - Operations and workflow
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tool
+    attributes:
+      label: Tool used
+      options:
+        - Claude
+        - ChatGPT
+        - Gemini
+        - Microsoft Copilot
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What it does
+      description: One or two sentences.
+      placeholder: Pulls the top health informatics stories each morning and formats them as a one-page briefing.
+
+  - type: textarea
+    id: prompt
+    attributes:
+      label: Prompt
+      description: Paste the full prompt so others can reuse it.
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Tap here, then attach one or more screenshots of the output. The first screenshot becomes the cover image.
+    validations:
+      required: true
+
+  - type: input
+    id: output_link
+    attributes:
+      label: Link to the output (optional)
+      description: A link to the HTML page, artifact, or document, if you have one.
+      placeholder: https://
+
+  - type: checkboxes
+    id: attestation
+    attributes:
+      label: Confirmation
+      options:
+        - label: These screenshots and this prompt contain no patient information (PHI).
+          required: true
+        - label: I'm OK with this entry appearing on the public gallery page.
+          required: true
