@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fellows Gallery</title>
+<meta name="description" content="Prompts and outputs built by Stony Brook Clinical Informatics fellows">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23990000'/%3E%3Ccircle cx='16' cy='16' r='6' fill='white'/%3E%3C/svg%3E">
+<style>
+:root {
+  --bg: #f6f5f3; --surface: #ffffff; --surface-2: #efedea; --text: #1d1b19; --muted: #6b6560;
+  --border: #dedad5; --accent: #990000; --accent-ink: #ffffff; --shadow: 0 10px 30px rgba(30,20,10,.14);
+  --card-w: 280px; --card-h: 360px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #141312; --surface: #1f1d1b; --surface-2: #2a2724; --text: #f1eeea; --muted: #a39d96;
+    --border: #36322e; --accent: #d14b4b; --accent-ink: #ffffff; --shadow: 0 10px 30px rgba(0,0,0,.5); }
+}
+@media (max-width: 640px) { :root { --card-w: 210px; --card-h: 280px; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh; overflow-x: hidden; }
+button, input, select { font: inherit; color: inherit; }
+a { color: var(--accent); }
+
+header { max-width: 1200px; margin: 0 auto; padding: 28px 16px 8px; display: flex; flex-wrap: wrap; gap: 16px;
+  align-items: flex-end; justify-content: space-between; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+h1 { margin: 2px 0 4px; font-size: clamp(26px, 5vw, 38px); line-height: 1.1; letter-spacing: -.01em; }
+.sub { color: var(--muted); margin: 0; }
+.btn { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--surface);
+  padding: 9px 14px; border-radius: 999px; cursor: pointer; text-decoration: none; color: var(--text); white-space: nowrap; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+
+.toolbar { max-width: 1200px; margin: 0 auto; padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.toolbar input, .toolbar select { background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+  padding: 8px 14px; min-width: 0; }
+.toolbar input { flex: 1 1 200px; }
+.toolbar select { flex: 0 1 auto; max-width: 100%; }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 999px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: none; padding: 8px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+
+/* Carousel (the lazy Susan) */
+.stage { position: relative; height: calc(var(--card-h) + 80px); perspective: 1400px; margin-top: 12px;
+  touch-action: pan-y; user-select: none; cursor: grab; overflow: hidden; }
+.stage.dragging { cursor: grabbing; }
+.ring { position: absolute; left: 50%; top: 30px; width: var(--card-w); height: var(--card-h);
+  margin-left: calc(var(--card-w) / -2); transform-style: preserve-3d; }
+.ring .card { transition: transform .55s cubic-bezier(.2,.8,.2,1), opacity .4s, filter .4s; }
+.stage.dragging .ring .card { transition: none; }
+.card { position: absolute; inset: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  overflow: hidden; box-shadow: var(--shadow); display: flex; flex-direction: column;
+  transition: opacity .4s, filter .4s; cursor: pointer; padding: 0; text-align: left; }
+.card img { width: 100%; flex: 1; min-height: 0; object-fit: cover; object-position: top; background: var(--surface-2); display: block; }
+.card .meta { padding: 10px 12px 12px; border-top: 1px solid var(--border); }
+.card .t { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .a { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.spin { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow); cursor: pointer; font-size: 20px; }
+.spin.prev { left: max(12px, calc(50% - 480px)); }
+.spin.next { right: max(12px, calc(50% - 480px)); }
+@media (max-width: 640px) { .spin { top: auto; bottom: 0; transform: none; } .spin.prev { left: 16px; } .spin.next { right: 16px; } }
+.caption { text-align: center; padding: 8px 16px 40px; min-height: 110px; }
+.caption h2 { margin: 0 0 2px; font-size: 20px; }
+.caption p { margin: 0; color: var(--muted); }
+.chip { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 999px; background: var(--surface-2);
+  color: var(--muted); margin: 6px 3px 0; }
+
+/* Grid */
+.grid { max-width: 1200px; margin: 8px auto 40px; padding: 0 16px; display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.grid .card { position: relative; inset: auto; aspect-ratio: 3 / 4; backface-visibility: visible; }
+
+.empty { text-align: center; color: var(--muted); padding: 60px 16px; }
+
+/* Detail view */
+dialog { border: 0; padding: 0; background: var(--surface); color: var(--text); border-radius: 18px; width: min(980px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px); box-shadow: var(--shadow); }
+dialog::backdrop { background: rgba(10,8,6,.6); }
+.detail { display: grid; grid-template-columns: 1.2fr 1fr; max-height: calc(100vh - 32px); }
+@media (max-width: 760px) { .detail { grid-template-columns: 1fr; overflow-y: auto; } }
+.shots { background: var(--surface-2); overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.shots img { width: 100%; border-radius: 10px; display: block; border: 1px solid var(--border); }
+.info { padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.info h2 { margin: 0; padding-right: 80px; font-size: 22px; line-height: 1.2; }
+.info .by { color: var(--muted); margin: 0; }
+.prompt-head { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+.prompt-head strong { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+pre { margin: 0; white-space: pre-wrap; word-break: break-word; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px; font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; max-height: 340px; overflow-y: auto; }
+.close { position: absolute; top: 10px; right: 10px; z-index: 2; }
+.links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 8px; }
+footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 16px 32px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="eyebrow">Stony Brook Clinical Informatics</div>
+    <h1>Fellows Gallery</h1>
+    <p class="sub" id="count">Prompts and outputs built by the fellows</p>
+  </div>
+  <a class="btn primary" id="submit" href="#">+ Submit a project</a>
+</header>
+
+<div class="toolbar">
+  <input id="q" type="search" placeholder="Search titles, prompts, authors" aria-label="Search">
+  <select id="cat" aria-label="Category"><option value="">All categories</option></select>
+  <select id="who" aria-label="Author"><option value="">All authors</option></select>
+  <div class="seg" role="group" aria-label="View">
+    <button id="v-ring" aria-pressed="true">Carousel</button>
+    <button id="v-grid" aria-pressed="false">Grid</button>
+  </div>
+</div>
+
+<main id="main"></main>
+
+<dialog id="dlg" aria-label="Project details">
+  <button class="btn close" id="dlg-close" aria-label="Close">Close</button>
+  <div class="detail">
+    <div class="shots" id="d-shots"></div>
+    <div class="info">
+      <h2 id="d-title"></h2>
+      <p class="by" id="d-by"></p>
+      <div id="d-chips"></div>
+      <p id="d-desc" style="margin:0"></p>
+      <div class="prompt-head"><strong>Prompt</strong><button class="btn" id="d-copy">Copy prompt</button></div>
+      <pre id="d-prompt"></pre>
+      <div class="links" id="d-links"></div>
+    </div>
+  </div>
+</dialog>
+
+<footer>No patient information belongs in this gallery. Report a problem to an organization owner.</footer>
+
+<script>
+// Change this if you rename the organization or repository.
+const REPO = 'Stony-Brook-Informatics-Fellows/Fellows-Gallery';
+
+const $ = s => document.querySelector(s);
+const el = (tag, props = {}, kids = []) => {
+  const n = Object.assign(document.createElement(tag), props);
+  kids.forEach(k => n.append(k));
+  return n;
+};
+$('#submit').href = `https://github.com/${REPO}/issues/new?template=submit-project.yml`;
+
+let all = [], view = 'ring', index = 0, list = [];
+try { view = localStorage.getItem('gallery-view') || 'ring'; } catch (e) {}
+
+const cover = e => (e.images && e.images[0]) || '';
+const fmtDate = d => d ? new Date(d + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+
+function fillSelect(sel, values) {
+  [...new Set(values.filter(Boolean))].sort().forEach(v => sel.append(el('option', { value: v, textContent: v })));
+}
+
+function filtered() {
+  const q = $('#q').value.trim().toLowerCase(), c = $('#cat').value, w = $('#who').value;
+  return all.filter(e => (!c || e.category === c) && (!w || e.author === w) &&
+    (!q || [e.title, e.author, e.description, e.prompt, e.category, e.tool].join(' ').toLowerCase().includes(q)));
+}
+
+function makeCard(e, i) {
+  const img = el('img', { src: cover(e), alt: `Screenshot of ${e.title}`, loading: 'lazy', draggable: false });
+  const card = el('button', { className: 'card', type: 'button' }, [
+    img, el('div', { className: 'meta' }, [el('div', { className: 't', textContent: e.title }), el('div', { className: 'a', textContent: e.author })])
+  ]);
+  card.dataset.i = i;
+  return card;
+}
+
+function render() {
+  list = filtered();
+  $('#count').textContent = `${all.length} project${all.length === 1 ? '' : 's'} from ${new Set(all.map(e => e.author)).size} fellow${new Set(all.map(e => e.author)).size === 1 ? '' : 's'}`;
+  $('#v-ring').setAttribute('aria-pressed', view === 'ring');
+  $('#v-grid').setAttribute('aria-pressed', view === 'grid');
+  const main = $('#main');
+  main.replaceChildren();
+  if (!list.length) { main.append(el('div', { className: 'empty', textContent: all.length ? 'No projects match your filters.' : 'No projects yet. Be the first to submit one.' })); return; }
+  if (view === 'grid') {
+    const grid = el('div', { className: 'grid' });
+    list.forEach((e, i) => { const c = makeCard(e, i); c.onclick = () => openDetail(e); grid.append(c); });
+    main.append(grid);
+  } else {
+    index = Math.min(index, list.length - 1);
+    buildRing(main);
+  }
+}
+
+// ---------- Carousel (a lazy Susan you spin left and right) ----------
+let stage, ring, pos = 0;
+function buildRing(main) {
+  stage = el('div', { className: 'stage', tabIndex: 0, ariaLabel: 'Project carousel. Use arrow keys to spin.' });
+  ring = el('div', { className: 'ring' });
+  list.forEach((e, i) => {
+    const c = makeCard(e, i);
+    c.onclick = () => { if (moved) return; i === index ? openDetail(e) : go(i); };
+    ring.append(c);
+  });
+  const prev = el('button', { className: 'spin prev', textContent: '‹', ariaLabel: 'Previous project' });
+  const next = el('button', { className: 'spin next', textContent: '›', ariaLabel: 'Next project' });
+  prev.onclick = () => go(index - 1); next.onclick = () => go(index + 1);
+  stage.append(ring);
+  if (list.length > 1) stage.append(prev, next);
+  main.append(stage, el('div', { className: 'caption', id: 'cap' }));
+  pos = index;
+  layout(); updateCaption(); wireDrag();
+  stage.onkeydown = e => {
+    if (e.key === 'ArrowRight') go(index + 1);
+    if (e.key === 'ArrowLeft') go(index - 1);
+    if (e.key === 'Enter') openDetail(list[index]);
+  };
+}
+function layout() {
+  const n = list.length;
+  const w = ring.offsetWidth;
+  const small = innerWidth < 640;
+  [...ring.children].forEach((c, i) => {
+    let o = i - pos;
+    if (n > 2) o = ((o % n) + n + n / 2) % n - n / 2; // wrap around the ring
+    const a = Math.abs(o);
+    const x = Math.sign(o) * Math.min(a, 1) * w * (small ? 0.62 : 0.72) + Math.sign(o) * Math.max(a - 1, 0) * w * (small ? 0.3 : 0.4);
+    c.style.transform = `translateX(${x}px) translateZ(${-a * (small ? 120 : 160)}px) rotateY(${-Math.sign(o) * Math.min(a, 1) * 38}deg)`;
+    c.style.zIndex = String(100 - Math.round(a * 10));
+    c.style.opacity = a > 3.2 ? 0 : String(Math.max(0.25, 1 - a * 0.22));
+    c.style.pointerEvents = a > 3.2 ? 'none' : 'auto';
+    c.style.filter = a < 0.5 ? 'none' : 'saturate(.55)';
+    c.tabIndex = Math.round(a) === 0 ? 0 : -1;
+  });
+}
+function go(i) {
+  const n = list.length;
+  let d = ((i - index) % n + n) % n;
+  if (d > n / 2) d -= n;
+  pos += d;
+  index = ((i % n) + n) % n;
+  layout(); updateCaption();
+}
+function updateCaption() {
+  const e = list[index], cap = $('#cap');
+  if (!e || !cap) return;
+  cap.replaceChildren(
+    el('h2', { textContent: e.title }),
+    el('p', { textContent: [e.author, fmtDate(e.date)].filter(Boolean).join(' · ') }),
+    el('div', {}, [e.category, e.tool].filter(Boolean).map(t => el('span', { className: 'chip', textContent: t }))),
+    el('p', { style: 'margin-top:8px;font-size:13px', textContent: `${index + 1} of ${list.length} · swipe to spin, tap the front card to open` })
+  );
+}
+let moved = false;
+function wireDrag() {
+  let startX = 0, startPos = 0, down = false;
+  const per = () => ring.offsetWidth * 0.7;
+  stage.onpointerdown = e => { down = true; moved = false; startX = e.clientX; startPos = pos; };
+  window.onpointermove = e => {
+    if (!down) return;
+    const dx = e.clientX - startX;
+    if (Math.abs(dx) > 6) { moved = true; stage.classList.add('dragging'); }
+    if (moved) { pos = startPos - dx / per(); layout(); }
+  };
+  window.onpointerup = () => {
+    if (!down) return; down = false; stage.classList.remove('dragging');
+    if (!moved) return;
+    pos = Math.round(pos);
+    const n = list.length; index = ((pos % n) + n) % n;
+    layout(); updateCaption();
+    setTimeout(() => moved = false, 0);
+  };
+}
+
+// ---------- Detail ----------
+function openDetail(e) {
+  $('#d-title').textContent = e.title;
+  $('#d-by').textContent = [e.author, fmtDate(e.date)].filter(Boolean).join(' · ');
+  $('#d-chips').replaceChildren(...[e.category, e.tool].filter(Boolean).map(t => el('span', { className: 'chip', textContent: t })));
+  $('#d-desc').textContent = e.description || '';
+  $('#d-prompt').textContent = e.prompt || '';
+  $('#d-shots').replaceChildren(...(e.images || []).map((src, i) =>
+    el('a', { href: src, target: '_blank', rel: 'noopener' }, [el('img', { src, alt: `${e.title} screenshot ${i + 1}` })])));
+  const links = [];
+  if (e.output_url) links.push(el('a', { className: 'btn primary', href: e.output_url, target: '_blank', rel: 'noopener', textContent: 'Open the output' }));
+  if (e.issue) links.push(el('a', { className: 'btn', href: e.issue, target: '_blank', rel: 'noopener', textContent: 'View submission' }));
+  $('#d-links').replaceChildren(...links);
+  $('#d-copy').textContent = 'Copy prompt';
+  $('#dlg').showModal();
+}
+$('#d-copy').onclick = async () => {
+  try { await navigator.clipboard.writeText($('#d-prompt').textContent); $('#d-copy').textContent = 'Copied'; }
+  catch (e) { $('#d-copy').textContent = 'Select and copy manually'; }
+};
+$('#dlg-close').onclick = () => $('#dlg').close();
+$('#dlg').onclick = e => { if (e.target === $('#dlg')) $('#dlg').close(); };
+
+// ---------- Controls ----------
+const setView = v => { view = v; try { localStorage.setItem('gallery-view', v); } catch (e) {} render(); };
+$('#v-ring').onclick = () => setView('ring');
+$('#v-grid').onclick = () => setView('grid');
+['#q', '#cat', '#who'].forEach(s => $(s).addEventListener('input', () => { index = 0; render(); }));
+let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => view === 'ring' && render(), 200); });
+
+fetch('gallery.json', { cache: 'no-store' })
+  .then(r => r.json())
+  .then(data => {
+    all = (data.entries || []).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    fillSelect($('#cat'), all.map(e => e.category));
+    fillSelect($('#who'), all.map(e => e.author));
+    render();
+  })
+  .catch(() => $('#main').replaceChildren(el('div', { className: 'empty', textContent: 'Could not load gallery.json.' })));
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+{
+  "entries": [
+    {
+      "id": "sample-daily-news-briefing",
+      "title": "Daily news briefing",
+      "author": "Sample entry",
+      "github": "",
+      "category": "Briefings and summaries",
+      "tool": "Claude",
+      "description": "Pulls the top health informatics and AI stories each morning and formats them as a one-page briefing.",
+      "prompt": "You are my morning briefing editor. Search for the five most important health informatics and clinical AI stories from the last 24 hours. For each story, give a headline, a two-sentence summary, and one line on why it matters to a hospital informatics team. Format the result as a one-page HTML briefing.",
+      "images": [
+        "entries/sample-daily-news-briefing/screenshot-1.png"
+      ],
+      "output_url": "",
+      "date": "2026-09-25",
+      "issue": ""
+    },
+    {
+      "id": "sample-patient-education-handout",
+      "title": "Patient education handout",
+      "author": "Sample entry",
+      "github": "",
+      "category": "Education",
+      "tool": "Claude",
+      "description": "Turns a clinical topic into a plain-language handout at a sixth-grade reading level.",
+      "prompt": "Write a one-page patient handout about [topic] at a sixth-grade reading level. Use five short sections with headings, avoid jargon, and end with three questions the patient can ask at their next visit.",
+      "images": [
+        "entries/sample-patient-education-handout/screenshot-1.png"
+      ],
+      "output_url": "",
+      "date": "2026-09-24",
+      "issue": ""
+    },
+    {
+      "id": "sample-qi-dashboard",
+      "title": "Screening gap dashboard",
+      "author": "Sample entry",
+      "github": "",
+      "category": "QI and population health",
+      "tool": "ChatGPT",
+      "description": "Builds a quick clinic-level dashboard from a de-identified screening export.",
+      "prompt": "Using the attached de-identified CSV, build a single-page HTML dashboard showing completion rates for each screening measure by clinic, with a bar chart and three summary tiles.",
+      "images": [
+        "entries/sample-qi-dashboard/screenshot-1.png"
+      ],
+      "output_url": "",
+      "date": "2026-09-22",
+      "issue": ""
+    },
+    {
+      "id": "sample-discharge-summary-template",
+      "title": "Discharge summary template",
+      "author": "Sample entry",
+      "github": "",
+      "category": "Documentation",
+      "tool": "Gemini",
+      "description": "Drafts a structured discharge summary template with bracketed placeholders.",
+      "prompt": "Create a discharge summary template with six sections. Use bracketed placeholders for every patient-specific detail and add a one-line instruction under each heading.",
+      "images": [
+        "entries/sample-discharge-summary-template/screenshot-1.png"
+      ],
+      "output_url": "",
+      "date": "2026-09-20",
+      "issue": ""
+    }
+  ]
+}
